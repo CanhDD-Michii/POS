@@ -1,0 +1,214 @@
+/* OrderPOS.css - Thiết kế hiện đại cho màn hình bán hàng */
+
+.pos-container {
+  padding: 24px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  min-height: 100vh;
+}
+
+.pos-header {
+  margin-bottom: 24px;
+}
+
+.pos-header .ant-typography {
+  color: #1a365d;
+  font-weight: 700;
+  margin: 0;
+}
+
+.pos-actions {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+}
+
+.pos-actions .ant-space {
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 12px !important;
+}
+
+/* Buttons */
+.pos-btn-scan {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  height: 48px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+}
+
+.pos-btn-scan:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.pos-btn-product {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border: none;
+  height: 48px;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
+  transition: all 0.3s ease;
+}
+
+.pos-btn-product:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 87, 108, 0.4);
+  color: white;
+}
+
+/* Select dropdowns */
+.pos-select {
+  height: 48px;
+}
+
+.pos-select .ant-select-selector {
+  height: 48px !important;
+  border-radius: 8px !important;
+  border: 2px solid #e2e8f0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.pos-select .ant-select-selector:hover {
+  border-color: #667eea !important;
+}
+
+.pos-select.ant-select-focused .ant-select-selector {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+.pos-select .ant-select-selection-placeholder {
+  line-height: 44px !important;
+  color: #a0aec0;
+}
+
+.pos-select .ant-select-selection-item {
+  line-height: 44px !important;
+  font-weight: 500;
+}
+
+/* Payment method select - special styling */
+.pos-select-payment .ant-select-selector {
+  border-color: #48bb78 !important;
+  background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+}
+
+.pos-select-payment.ant-select-focused .ant-select-selector {
+  border-color: #38a169 !important;
+  box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.1) !important;
+}
+
+/* Cart table area */
+.pos-cart-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Summary card */
+.pos-summary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  margin-top: 20px;
+  border: none;
+  color: white;
+}
+
+.pos-summary .ant-card-body {
+  padding: 24px;
+  text-align: right;
+}
+
+.pos-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pos-summary-label {
+  font-weight: 500;
+}
+
+.pos-summary-value {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.pos-summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  padding-top: 16px;
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+}
+
+.pos-btn-checkout {
+  width: 100%;
+  height: 56px;
+  font-size: 18px;
+  font-weight: 700;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.pos-btn-checkout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  color: #764ba2;
+  background: white;
+}
+
+/* Status select styling */
+.pos-select-status .ant-select-selector {
+  border-color: #ed8936 !important;
+  background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pos-container {
+    padding: 16px;
+  }
+
+  .pos-actions {
+    padding: 16px;
+  }
+
+  .pos-btn-scan,
+  .pos-btn-product {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .pos-select {
+    width: 100% !important;
+  }
+
+  .pos-summary-total {
+    font-size: 20px;
+  }
+
+  .pos-btn-checkout {
+    height: 48px;
+    font-size: 16px;
+  }
+}
