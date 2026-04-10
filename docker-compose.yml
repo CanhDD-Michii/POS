@@ -1,4 +1,4 @@
-# POS local stack: PostgreSQL 17 + API only (frontend: npm run dev on host)
+# POS stack: PostgreSQL 17 + API + frontend (Vite build + nginx)
 # Copy .env.example to .env and adjust secrets before first run.
 
 name: pos-stack
@@ -19,12 +19,18 @@ services:
       # Dump must NOT use .sql suffix here (image auto-runs *.sql before scripts order may conflict)
       - ./DB.sql:/docker-entrypoint-initdb.d/seed/DB.sql:ro
       - ./docker/postgres/restore.sh:/docker-entrypoint-initdb.d/restore.sh:ro
+    # Compose expands ${...} on the host — avoids $$ shell issues on some Docker builds.
+    # Long start_period: first boot runs restore.sh (large DB.sql can take minutes).
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U \"${POSTGRES_USER:-postgres}\" -d \"${POSTGRES_DB:-pos_db}\"",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 36
+      start_period: 300s
 
   api:
     build:
@@ -49,6 +55,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api}
+        VITE_UPLOADS_ORIGIN: ${VITE_UPLOADS_ORIGIN:-http://localhost:3000}
+    container_name: pos-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - api
 
 volumes:
   postgres_data:

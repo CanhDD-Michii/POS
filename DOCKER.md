@@ -1,6 +1,6 @@
-# Docker & Docker Compose — POS (local)
+# Docker & Docker Compose — POS
 
-Chỉ Docker hóa **PostgreSQL 17** và **API Node** (port 3000). **Frontend chạy trên máy** bằng Vite (`npm run dev`) — không dùng Nginx/container web.
+Stack: **PostgreSQL 17**, **API Node** (port 3000), **frontend** (build Vite + **nginx**, port `WEB_PORT` mặc định 8080).
 
 File `DB.sql` (dump PG 17) được **restore tự động lần đầu** khi volume database còn trống.
 
@@ -8,41 +8,25 @@ File `DB.sql` (dump PG 17) được **restore tự động lần đầu** khi vo
 
 - Docker Engine + Docker Compose plugin (v2)
 - File `DB.sql` nằm **cùng thư mục** với `docker-compose.yml`
-- Node.js trên máy để chạy frontend (khuyến nghị 20+)
 
 ## Chạy nhanh
-
-**1) Database + API**
 
 ```bash
 cd /path/to/POS
 cp .env.example .env
-# Sửa POSTGRES_PASSWORD và JWT_SECRET trong .env
+# Sửa POSTGRES_PASSWORD, JWT_SECRET; nếu đổi API_PORT thì sửa luôn VITE_* cho khớp
 
 docker compose up -d --build
 ```
 
-- API: `http://localhost:3000` (REST dưới `http://localhost:3000/api/...`)
-- Ảnh upload: `http://localhost:3000/uploads/...`
-- PostgreSQL: `localhost:5432` (theo `.env`)
+- **Giao diện:** `http://localhost:8080` (hoặc `WEB_PORT` trong `.env`)
+- **API:** `http://localhost:3000` — REST: `http://localhost:3000/api/...`
+- **Ảnh upload:** `http://localhost:3000/uploads/...`
+- **PostgreSQL:** `localhost:5432` (theo `.env`)
 
-**2) Frontend (máy local)**
+`VITE_API_BASE_URL` / `VITE_UPLOADS_ORIGIN` là URL **trình duyệt trên máy bạn** dùng để gọi API (build time). Mặc định `localhost:3000` đúng khi publish cổng API ra host như trong compose.
 
-```bash
-cd frontend
-npm install
-# Mặc định api.js dùng http://localhost:3000/api — đủ nếu API map cổng 3000
-npm run dev
-```
-
-Mở URL Vite in ra (thường `http://localhost:5173`).
-
-Nếu API chạy cổng khác, tạo `frontend/.env.local`:
-
-```env
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_UPLOADS_ORIGIN=http://localhost:3000
-```
+**Dev frontend ngoài Docker (tùy chọn):** `cd frontend && npm run dev` — dùng `frontend/.env.local` với cùng `VITE_*` nếu cần.
 
 Dừng Docker:
 
@@ -102,15 +86,19 @@ docker compose exec db sh -c "sed '/^\\restrict/d' /tmp/DB.sql | psql -U postgre
 | `POSTGRES_*` | User, password, tên DB, cổng publish ra host |
 | `JWT_SECRET` | Ký JWT đăng nhập API |
 | `API_PORT` | Cổng host map vào API (mặc định 3000) |
+| `WEB_PORT` | Cổng host map vào nginx frontend (mặc định 8080) |
+| `VITE_API_BASE_URL` | URL API khi **build** image `web` (trình duyệt gọi từ máy host) |
+| `VITE_UPLOADS_ORIGIN` | Origin `/uploads` tương ứng |
 
-Frontend: cấu hình qua `frontend/.env.local` (`VITE_*`), không nằm trong Compose.
+Đổi `API_PORT` hoặc domain → sửa `VITE_*` trong `.env` rồi **`docker compose build web --no-cache`** (hoặc `up --build`).
 
 ---
 
 ## Xử lý sự cố
 
+- **`pos-db` unhealthy / `dependency failed to start`:** xem log `docker compose logs db`. Lần đầu restore `DB.sql` có thể **vài phút** — đã tăng `start_period` / `retries` trong compose. Nếu restore **lỗi SQL** (file dump lệch phiên bản), init hỏng: chạy `docker compose down -v` rồi `up` lại sau khi sửa dump. Healthcheck dùng `pg_isready` với user/db từ `.env` (mặc định `postgres` / `pos_db`).
 - **API không kết nối DB:** `docker compose logs db api`, đợi `db` healthy.
-- **Frontend không gọi được API:** CORS đang mở; kiểm tra URL trong `frontend/src/config/constants.js` / `.env.local` và cổng `API_PORT`.
+- **Frontend (container) không gọi được API:** kiểm tra `VITE_API_BASE_URL` / `VITE_UPLOADS_ORIGIN` khớp cổng `API_PORT` trên host, rồi build lại `web`.
 - **Lỗi build API (bcrypt):** thử image `node:20-bookworm` + `build-essential` trong `backend/Dockerfile`.
 
 ---
@@ -118,9 +106,11 @@ Frontend: cấu hình qua `frontend/.env.local` (`VITE_*`), không nằm trong C
 ## Cấu trúc file liên quan
 
 ```
-docker-compose.yml          # db + api
+docker-compose.yml          # db + api + web
 docker/postgres/restore.sh  # Init: import DB.sql (lần đầu)
 backend/Dockerfile
+frontend/Dockerfile
+frontend/nginx.conf
 .env.example
 DB.sql
 ```

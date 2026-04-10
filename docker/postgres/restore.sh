@@ -1,6 +1,6 @@
 #!/bin/sh
 # Runs once on first PostgreSQL data volume init (docker-entrypoint-initdb.d).
-# Strips PG 17+ psql meta-command \restrict so restore works reliably.
+# Drops pg_dump 17+ \restrict lines (awk — portable on Alpine/BusyBox vs sed quirks).
 
 set -eu
 
@@ -10,7 +10,7 @@ if [ ! -f "$DUMP" ]; then
   exit 0
 fi
 
-echo "restore.sh: restoring database $POSTGRES_DB from DB.sql ..."
-# Remove \restrict lines (pg_dump 17 security token) before piping to psql
-sed '/^\\restrict/d' "$DUMP" | psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB"
+echo "restore.sh: restoring database $POSTGRES_DB from DB.sql (this may take several minutes) ..."
+# Skip any line that starts with the psql meta-command \restrict
+awk '!/^\\restrict/' "$DUMP" | psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB"
 echo "restore.sh: done."
